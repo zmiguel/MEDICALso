@@ -2,30 +2,33 @@
 CC = gcc
 LINKERFLAG = -lm
 
+obj = build
+src = src
+
 
 all: cliente medico balcao classificador
 
-build/%.o: src/%.c
+${obj}/%.o: ${src}/%.c
 	@echo "Creating object.."
 	${CC} -c $< -o $@
 
-cliente: build/cliente.o build/util.o
-	echo "Checking.."
-	${CC} ${LINKERFLAG} build/$< -o bin/$@
+cliente: ${obj}/cliente.o ${obj}/util.o
+	@echo "Checking.."
+	${CC} ${LINKERFLAG} ${obj}/$< -o ${src}/$@
 
-medico: build/medico.o build/util.o
-	echo "Checking.."
-	${CC} ${LINKERFLAG} build/$< -o bin/$@
+medico: ${obj}/medico.o ${obj}/util.o
+	@echo "Checking.."
+	${CC} ${LINKERFLAG} ${obj}/$< -o ${src}/$@
 
-balcao: build/balcao.o build/util.o
-	echo "Checking.."
-	${CC} ${LINKERFLAG} build/$< -o bin/$@
+balcao: ${obj}/balcao.o ${obj}/util.o
+	@echo "Checking.."
+	${CC} ${LINKERFLAG} ${obj}/$< -o ${src}/$@
 
-classificador: build/classificador.o build/util.o
-	echo "Checking.."
-	${CC} ${LINKERFLAG} build/$< -o bin/$@
+classificador: ${obj}/classificador.o ${obj}/util.o
+	@echo "Checking.."
+	${CC} ${LINKERFLAG} ${obj}/$< -o ${src}/$@
 
 clean:
 	@echo "Cleaning up..."
-	rm -rvf build/*.o bin/*
+	rm -rvf ${obj}/*.o ${src}/*
 	
