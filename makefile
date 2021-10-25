@@ -9,7 +9,7 @@ all: cliente medico balcao classificador
 	@echo "Creating object.."
 	${CC} -c src/$< -o build/$@
 
-cliente: client.o util.o
+cliente: cliente.o util.o
 	echo "Checking.."
 	${CC} ${LINKERFLAG} build/$< -o bin/$@
 
