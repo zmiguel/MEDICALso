@@ -5,23 +5,23 @@ LINKERFLAG = -lm
 
 all: cliente medico balcao classificador
 
-%.o: %.c
+build/%.o: src/%.c
 	@echo "Creating object.."
-	${CC} -c src/$< -o build/$@
+	${CC} -c $< -o $@
 
-cliente: cliente.o util.o
+cliente: build/cliente.o build/util.o
 	echo "Checking.."
 	${CC} ${LINKERFLAG} build/$< -o bin/$@
 
-medico: medico.o util.o
+medico: build/medico.o build/util.o
 	echo "Checking.."
 	${CC} ${LINKERFLAG} build/$< -o bin/$@
 
-balcao: balcao.o util.o
+balcao: build/balcao.o build/util.o
 	echo "Checking.."
 	${CC} ${LINKERFLAG} build/$< -o bin/$@
 
-classificador: classificador.o util.o
+classificador: build/classificador.o build/util.o
 	echo "Checking.."
 	${CC} ${LINKERFLAG} build/$< -o bin/$@
 
