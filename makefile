@@ -15,19 +15,19 @@ ${obj}/%.o: ${src}/%.c
 
 cliente: ${obj}/cliente.o ${obj}/util.o
 	@echo "Checking.."
-	${CC} ${LINKERFLAG} ${obj}/$< -o ${bin}/$@
+	${CC} ${LINKERFLAG} $^ -o ${bin}/$@
 
 medico: ${obj}/medico.o ${obj}/util.o
 	@echo "Checking.."
-	${CC} ${LINKERFLAG} ${obj}/$< -o ${bin}/$@
+	${CC} ${LINKERFLAG} $^ -o ${bin}/$@
 
 balcao: ${obj}/balcao.o ${obj}/util.o
 	@echo "Checking.."
-	${CC} ${LINKERFLAG} ${obj}/$< -o ${bin}/$@
+	${CC} ${LINKERFLAG} $^ -o ${bin}/$@
 
 classificador: ${obj}/classificador.o ${obj}/util.o
 	@echo "Checking.."
-	${CC} ${LINKERFLAG} ${obj}/$< -o ${bin}/$@
+	${CC} ${LINKERFLAG} $^ -o ${bin}/$@
 
 clean:
 	@echo "Cleaning up..."
