@@ -30,5 +30,5 @@ classificador: ${obj}/classificador.o ${obj}/util.o
 
 clean:
 	@echo "Cleaning up..."
-	rm -rvf ${obj}/*.o ${src}/*
+	rm -rvf ${obj}/*.o ${bin}/*
 	
