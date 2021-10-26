@@ -31,7 +31,7 @@ classificador: ${obj}/classificador.o ${obj}/util.o
 
 dirs:
 	@echo "Making dirs..."
-	mkdir -p ${obj} {bin}
+	mkdir -p ${obj} ${bin}
 
 clean:
 	@echo "Cleaning up..."
