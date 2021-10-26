@@ -7,7 +7,7 @@ src = src
 bin = bin
 
 
-all: cliente medico balcao classificador
+all: dirs cliente medico balcao classificador
 
 ${obj}/%.o: ${src}/%.c
 	@echo "Creating object.."
@@ -28,6 +28,10 @@ balcao: ${obj}/balcao.o ${obj}/util.o
 classificador: ${obj}/classificador.o ${obj}/util.o
 	@echo "Checking.."
 	${CC} ${LINKERFLAG} $^ -o ${bin}/$@
+
+dirs:
+	@echo "Making dirs..."
+	mkdir -p build bin
 
 clean:
 	@echo "Cleaning up..."
