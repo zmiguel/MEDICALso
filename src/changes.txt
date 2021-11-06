@@ -1,0 +1,21 @@
+Os pontos para esta meta:
+    - Planear e definir as estruturas de dados responsáveis por gerir as definições de funcionamento no cliente,
+médico e serviço. Definir os vários header files com constantes simbólicas que registem os valores por omissão
+comuns e específicos do cliente e servidor bem como as estruturas de dados relevantes.
+
+    - Implementar a parte do balcão relativa à classificação da especialidade e respetiva prioridade. Para tal deve
+assumir que os dados dos sintomas são obtidos diretamente pelo utilizador administrador do programa balcão.
+
+    - Implementar no balcão a obtenção dos valores das variáveis de ambiente e concretizar as estruturas de dados
+do balcão
+
+Quanto ao primeiro ponto adicionei as estruturas Utente, Especialista e Administrador no ficheiro util.h.
+Provavelmente ainda estão incompletas, mas parece-me um bom ponto de partida.
+
+Para o segundo ponto fiz o ciclo while no balcao que pergunta ao utilizador a especialidade e prioridade do utente,
+preenchendo a estrutura com esses dados e guardando-a no array de utentes. Não sei bem se é isto que é suposto, mas
+acho que vamos precisar de código assim parecido pelo menos. O ciclo for no final foi só para ver se estava tudo a ser
+bem guardado.
+
+O terceiro ponto está feito no inicio do balcao. Só não percebi bem a parte de "concretizar as estruturas de dados
+do balcao", por isso não fiz nada.
