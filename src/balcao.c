@@ -1,15 +1,42 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+
 #include "util.h"
 
-int main(int argc, char **argv){
+int main(int argc, char **argv, char **envp) {
+    // configurar e lançar programa classificador
+    int fd_in[2], fd_out[2];
+    pipe(fd_in);
+    pipe(fd_out);
+    int to_class = fd_in[1];
+    int from_class = fd_out[0];
+    if(fork() == 0) {
+        // in child
+        // close input side (0) of out
+        // close output side (1) of in
+        close(fd_in[1]);
+        close(fd_out[0]);
+        dup2(fd_in[0], STDIN_FILENO);
+        dup2(fd_out[1], STDOUT_FILENO);
+        close(fd_in[0]);
+        close(fd_out[1]);
+        execlp("classificador", "classificador", NULL);
+    }else{
+        // in parent
+        // close 0 of in
+        // close 1 of out
+        close(fd_in[0]);
+        close(fd_out[1]);
+    }
+    // definição de variáveis
     int maxClientes, maxMedicos;
     Utente utentes[5][5];
     Utente utenteNovo;
     int filas[5] = {0, 0, 0, 0, 0};
-    char especialidade[256];
-    int prioridade;
+    char sintomas[256];
     int i, j;
 
     //parte das variaveis de ambiente
@@ -24,16 +51,25 @@ int main(int argc, char **argv){
     maxClientes = atoi(getenv("MAXCLIENTES"));
     maxMedicos = atoi(getenv("MAXMEDICOS"));
 
-    //classificacao de especialidade e respetiva prioridade
+    //classificação de especialidade e respetiva prioridade
     while(1) {
-        printf("Indique a especialidade: ");
-        scanf(" %[^\n]", especialidade);
-        printf("Indique a prioridade: ");
-        scanf(" %d", &prioridade);
-        if(prioridade < 1 || prioridade > 3) {
-            printf("Prioridade tem que estar entre 1 e 3!\n");
-            continue;
+        printf("Indique os sintomas: ");
+        scanf("%[^\n]", sintomas);
+        char especialidade[256];
+        int prioridade=0;
+        char temp[256];
+
+        if(strcmp(sintomas, "sair") == 0) {
+            break;
         }
+
+        // enviar sintomas ao classificador
+        write(to_class, sintomas, sizeof(sintomas));
+        // receber resposta do classificador
+        read(from_class, temp, sizeof(temp));
+        // separar resposta
+        sscanf(temp, "%s %d", especialidade, &prioridade);
+
         if(strcmp(especialidade, "geral") == 0 && filas[0] < 5) {
             strcpy(utenteNovo.especialidade, especialidade);
             utenteNovo.prioridade = prioridade;

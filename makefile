@@ -1,4 +1,4 @@
-.PHONY = all clean cliente medico balcao classificador
+.PHONY = all clean cliente medico balcao
 CC = gcc
 LINKERFLAG = -g -lm
 
@@ -7,7 +7,7 @@ src = src
 bin = bin
 
 
-all: dirs cliente medico balcao classificador
+all: dirs cliente medico balcao
 
 ${obj}/%.o: ${src}/%.c
 	@echo "Creating object.."
@@ -22,10 +22,6 @@ medico: ${obj}/medico.o ${obj}/util.o
 	${CC} ${LINKERFLAG} $^ -o ${bin}/$@
 
 balcao: ${obj}/balcao.o ${obj}/util.o
-	@echo "Checking.."
-	${CC} ${LINKERFLAG} $^ -o ${bin}/$@
-
-classificador: ${obj}/classificador.o ${obj}/util.o
 	@echo "Checking.."
 	${CC} ${LINKERFLAG} $^ -o ${bin}/$@
 
