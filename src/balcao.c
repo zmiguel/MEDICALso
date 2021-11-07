@@ -23,7 +23,7 @@ int main(int argc, char **argv, char **envp) {
         dup2(fd_out[1], STDOUT_FILENO);
         close(fd_in[0]);
         close(fd_out[1]);
-        execlp("classificador", "classificador", NULL);
+        execlp("./classificador", "./classificador", NULL);
     }else{
         // in parent
         // close 0 of in
