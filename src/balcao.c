@@ -11,8 +11,8 @@ int main(int argc, char **argv, char **envp) {
     int fd_in[2], fd_out[2];
     pipe(fd_in);
     pipe(fd_out);
-    int to_class = fd_in[1];
-    int from_class = fd_out[0];
+    int to_class = fd_in[0];
+    int from_class = fd_out[1];
     if(fork() == 0) {
         // in child
         // close input side (0) of out
@@ -54,7 +54,7 @@ int main(int argc, char **argv, char **envp) {
     //classificação de especialidade e respetiva prioridade
     while(1) {
         printf("Indique os sintomas: ");
-        scanf("%[^\n]", sintomas);
+        scanf(" %[^\n]", sintomas);
         char especialidade[256];
         int prioridade=0;
         char temp[256];
