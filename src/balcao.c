@@ -11,8 +11,8 @@ int main(int argc, char **argv, char **envp) {
     int fd_in[2], fd_out[2];
     pipe(fd_in);
     pipe(fd_out);
-    int to_class = fd_in[0];
-    int from_class = fd_out[1];
+    int to_class = fd_in[1];
+    int from_class = fd_out[0];
     if(fork() == 0) {
         // in child
         // close input side (0) of out
@@ -23,11 +23,11 @@ int main(int argc, char **argv, char **envp) {
         dup2(fd_out[1], STDOUT_FILENO);
         close(fd_in[0]);
         close(fd_out[1]);
-        execlp("./classificador", "./classificador", NULL);
+        execl("./classificador", "./classificador", NULL);
     }else{
         // in parent
-        // close 0 of in
-        // close 1 of out
+        // close 1 of in
+        // close 0 of out
         close(fd_in[0]);
         close(fd_out[1]);
     }
@@ -66,7 +66,8 @@ int main(int argc, char **argv, char **envp) {
         // enviar sintomas ao classificador
         write(to_class, sintomas, sizeof(sintomas));
         // receber resposta do classificador
-        read(from_class, temp, sizeof(temp));
+        read(from_class, &temp, sizeof(temp));
+        printf("%s\n", temp);
         // separar resposta
         sscanf(temp, "%s %d", especialidade, &prioridade);
 
