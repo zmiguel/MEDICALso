@@ -15,19 +15,21 @@ int main(int argc, char **argv, char **envp) {
     int from_class = fd_out[0];
     if(fork() == 0) {
         // in child
-        // close input side (0) of out
-        // close output side (1) of in
-        close(fd_in[1]);
-        close(fd_out[0]);
-        dup2(fd_in[0], STDIN_FILENO);
-        dup2(fd_out[1], STDOUT_FILENO);
+        close(0);
+        dup(fd_in[0]);
         close(fd_in[0]);
+        close(fd_in[1]);
+
+        close(1);
+        dup(fd_out[1]);
+        close(fd_out[0]);
         close(fd_out[1]);
+
         execl("./classificador", "./classificador", NULL);
     }else{
         // in parent
-        // close 1 of in
-        // close 0 of out
+        // close 0 of in
+        // close 1 of out
         close(fd_in[0]);
         close(fd_out[1]);
     }
@@ -36,7 +38,7 @@ int main(int argc, char **argv, char **envp) {
     Utente utentes[5][5];
     Utente utenteNovo;
     int filas[5] = {0, 0, 0, 0, 0};
-    char sintomas[256];
+    char sintomas[]="doi tudo\n";
     int i, j;
 
     //parte das variaveis de ambiente
@@ -52,9 +54,12 @@ int main(int argc, char **argv, char **envp) {
     maxMedicos = atoi(getenv("MAXMEDICOS"));
 
     //classificação de especialidade e respetiva prioridade
-    while(1) {
+    int sair_while=1;
+    while(sair_while < 3) {
+        fflush(stdin);
         printf("Indique os sintomas: ");
-        scanf(" %[^\n]", sintomas);
+        //fgets(sintomas, sizeof(sintomas),stdin);
+        //scanf(" %[^\n]", sintomas);
         char especialidade[256];
         int prioridade=0;
         char temp[256];
@@ -62,14 +67,17 @@ int main(int argc, char **argv, char **envp) {
         if(strcmp(sintomas, "sair") == 0) {
             break;
         }
-
+        
         // enviar sintomas ao classificador
         write(to_class, sintomas, sizeof(sintomas));
         // receber resposta do classificador
-        read(from_class, &temp, sizeof(temp));
-        printf("%s\n", temp);
+        printf("aqui\n");
+        read(from_class, temp, sizeof(temp)-1);
+        printf("ali\n");
         // separar resposta
         sscanf(temp, "%s %d", especialidade, &prioridade);
+
+        printf("(%s || %s || %d)\n", temp, especialidade, prioridade);
 
         if(strcmp(especialidade, "geral") == 0 && filas[0] < 5) {
             strcpy(utenteNovo.especialidade, especialidade);
@@ -124,6 +132,7 @@ int main(int argc, char **argv, char **envp) {
                 printf("Especialidade: %s\tPrioridade: %d\n", utentes[i][j].especialidade, utentes[i][j].prioridade);
             }
         }
+        sair_while++;
     }
 
     return 0;
