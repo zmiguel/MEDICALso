@@ -55,7 +55,6 @@ int main(int argc, char **argv, char **envp) {
 
     //classificação de especialidade e respetiva prioridade
     int sair_while=0;
-    printf("estpou aqui\n");
     while(sair_while < 3) {
         printf("Indique os sintomas: ");
         fgets(sintomas, sizeof(sintomas)-1, stdin);
@@ -72,9 +71,7 @@ int main(int argc, char **argv, char **envp) {
         //alterei write(to_class, sintomas, sizeof(sintomas));
         write(to_class, sintomas, strlen(sintomas));
         // receber resposta do classificador
-        printf("aqui\n");
         debug_read = read(from_class, temp, sizeof(temp)-1);
-        printf("ali %d\n", debug_read);
         if(debug_read == -1) {
             printf("erro ao ler do classificador\n");
             return 0;
@@ -83,7 +80,7 @@ int main(int argc, char **argv, char **envp) {
         // separar resposta
         sscanf(temp, "%s %d", especialidade, &prioridade);
         printf("(%s || %s || %d)\n", temp, especialidade, prioridade);
-        /*
+        
         if(strcmp(especialidade, "geral") == 0 && filas[0] < 5) {
             strcpy(utenteNovo.especialidade, especialidade);
             utenteNovo.prioridade = prioridade;
@@ -136,7 +133,7 @@ int main(int argc, char **argv, char **envp) {
             for(j=0;j<5;j++) {
                 printf("Especialidade: %s\tPrioridade: %d\n", utentes[i][j].especialidade, utentes[i][j].prioridade);
             }
-        }*/
+        }
         sair_while++;
     }
 
