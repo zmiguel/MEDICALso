@@ -71,6 +71,8 @@ int main(int argc, char **argv, char **envp) {
         int debug_read = 0;
 
         if(strcmp(sintomas, "sair\n") == 0) {
+            char sair[] = "#fim\n";
+            write(to_class, sair, strlen(sair));
             return 0;
         }
         
