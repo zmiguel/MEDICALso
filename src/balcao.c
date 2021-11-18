@@ -41,6 +41,14 @@ int main(int argc, char **argv, char **envp) {
     char sintomas[1000];
     int i, j;
 
+    // iniciar utentes a zero
+    for(i = 0; i < 5; i++) {
+        for(j = 0; j < 5; j++) {
+            utentes[i][j].especialidade[0] = '\0';
+            utentes[i][j].prioridade = 0;
+        }
+    }
+
     //parte das variaveis de ambiente
     if(getenv("MAXCLIENTES") == NULL) {
         printf("Variavel de ambiente MAXCLIENTES nao existe!\n");
@@ -63,12 +71,11 @@ int main(int argc, char **argv, char **envp) {
         char temp[256];
         int debug_read = 0;
 
-        if(strcmp(sintomas, "sair") == 0) {
-            break;
+        if(strcmp(sintomas, "sair\n") == 0) {
+            return 0;
         }
         
         // enviar sintomas ao classificador
-        //alterei write(to_class, sintomas, sizeof(sintomas));
         write(to_class, sintomas, strlen(sintomas));
         // receber resposta do classificador
         debug_read = read(from_class, temp, sizeof(temp)-1);
