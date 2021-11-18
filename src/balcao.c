@@ -38,7 +38,7 @@ int main(int argc, char **argv, char **envp) {
     Utente utentes[5][5];
     Utente utenteNovo;
     int filas[5] = {0, 0, 0, 0, 0};
-    char sintomas[512];
+    char sintomas[1000];
     int i, j;
 
     //parte das variaveis de ambiente
@@ -58,7 +58,7 @@ int main(int argc, char **argv, char **envp) {
     printf("estpou aqui\n");
     while(sair_while < 3) {
         printf("Indique os sintomas: ");
-        fgets(sintomas, sizeof(sintomas), stdin);
+        fgets(sintomas, sizeof(sintomas)-1, stdin);
         char especialidade[256];
         int prioridade=0;
         char temp[256];
@@ -69,15 +69,19 @@ int main(int argc, char **argv, char **envp) {
         }
         
         // enviar sintomas ao classificador
-        write(to_class, sintomas, sizeof(sintomas));
+        //alterei write(to_class, sintomas, sizeof(sintomas));
+        write(to_class, sintomas, strlen(sintomas));
         // receber resposta do classificador
         printf("aqui\n");
-        debug_read = read(from_class, temp, sizeof(char)*512-1);
+        debug_read = read(from_class, temp, sizeof(temp)-1);
         printf("ali %d\n", debug_read);
+        if(debug_read == -1) {
+            printf("erro ao ler do classificador\n");
+            return 0;
+        }
         temp[debug_read] = '\0';
         // separar resposta
         sscanf(temp, "%s %d", especialidade, &prioridade);
-
         printf("(%s || %s || %d)\n", temp, especialidade, prioridade);
         /*
         if(strcmp(especialidade, "geral") == 0 && filas[0] < 5) {
