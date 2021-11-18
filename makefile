@@ -31,7 +31,13 @@ dirs:
 	@echo "Making dirs..."
 	mkdir -p ${obj} ${bin}
 
+clean_mac:
+	@echo "Cleaning up..."
+	rm -rvf ${obj}/*.o ${bin}/*
+	cp prof/classificador_mac bin/classificador
+
 clean:
 	@echo "Cleaning up..."
 	rm -rvf ${obj}/*.o ${bin}/*
+	cp prof/classificador bin/classificador
 	
