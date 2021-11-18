@@ -62,8 +62,7 @@ int main(int argc, char **argv, char **envp) {
     maxMedicos = atoi(getenv("MAXMEDICOS"));
 
     //classificação de especialidade e respetiva prioridade
-    int sair_while=0;
-    while(sair_while < 3) {
+    while(1) {
         printf("Indique os sintomas: ");
         fgets(sintomas, sizeof(sintomas)-1, stdin);
         char especialidade[256];
@@ -86,7 +85,6 @@ int main(int argc, char **argv, char **envp) {
         temp[debug_read] = '\0';
         // separar resposta
         sscanf(temp, "%s %d", especialidade, &prioridade);
-        printf("(%s || %s || %d)\n", temp, especialidade, prioridade);
         
         if(strcmp(especialidade, "geral") == 0 && filas[0] < 5) {
             strcpy(utenteNovo.especialidade, especialidade);
@@ -135,13 +133,15 @@ int main(int argc, char **argv, char **envp) {
                 }
             }
         }
-        printf("Todos os utentes:\n");
+        printf("----------\nTodos os utentes:\n");
         for(i=0;i<5;i++) {
             for(j=0;j<5;j++) {
-                printf("Especialidade: %s\tPrioridade: %d\n", utentes[i][j].especialidade, utentes[i][j].prioridade);
+                if(utentes[i][j].especialidade[0] != '\0') {
+                    printf("Especialidade: %s\tPrioridade: %d\n", utentes[i][j].especialidade, utentes[i][j].prioridade);
+                }
             }
         }
-        sair_while++;
+        printf("----------\n");
     }
 
     return 0;

@@ -8,6 +8,8 @@ bin = bin
 
 
 all: dirs cliente medico balcao
+	export MAXCLIENTES=50
+	export MAXMEDICOS=50
 
 ${obj}/%.o: ${src}/%.c
 	@echo "Creating object.."
