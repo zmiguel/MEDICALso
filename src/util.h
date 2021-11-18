@@ -5,11 +5,6 @@ struct utente{
   int prioridade;
 } typedef Utente;
 
-struct administrador{
-  char nome[256];
-} typedef Administrador;
-
-// Estrutura para guardar os administradores
 struct especialista{
   char nome[256];
   char especialidade[256];
