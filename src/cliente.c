@@ -98,6 +98,37 @@ int main(int argc, char **argv){
 
     // consulta pronta, ler pipe para obter medico
     // abrir pipe do medico e começar consulta
+    char *fifo_medico = malloc(sizeof(char)*20);
+    sprintf(fifo_medico, "./medico-%d", medico_pid);
+
+    // make select system for chat with medico
+
+    int nfd;
+    fd_set read_fds;
+    struct timeval tv;
+
+    int medico = open(fifo_medico, O_RDONLY | O_NONBLOCK);
+    int sair = 0;
+
+    do{
+        tv.tv_sec = 1;
+        tv.tv_usec = 0;
+
+        FD_ZERO(&read_fds);
+        FD_SET(0, &read_fds); // stdin
+        FD_SET(medico, &read_fds);
+
+        nfd = select(medico+1, &read_fds, NULL, NULL, &tv);
+        if(FD_ISSET(0, &read_fds)){
+            // stdin
+            char msg[1000];
+
+        }
+        if(FD_ISSET(medico, &read_fds)){
+            // medico
+        }
+        
+    }while(sair!=1);
 
     return 0;
 }
