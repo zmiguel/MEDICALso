@@ -24,6 +24,8 @@ struct balcao_utente{
   int tipo;
   char especialidade[256];
   int prioridade;
+  int num_utentes;
+  int num_especialistas;
   char msg[256];
 } typedef B_U;
 

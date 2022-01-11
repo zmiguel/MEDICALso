@@ -13,6 +13,19 @@
 
 #include "util.h"
 
+// Global variables
+int consulta = 0;
+int medico_pid = 0;
+
+void handle_sig(int signo, siginfo_t *info, void *context){
+    // SIGUSR1
+    if(signo == 10){
+        consulta = 1;
+        //TODO: obter o pid do medico
+    }
+    // TODO: handle SIGINT to tell server we left
+}
+
 int main(int argc, char **argv){
     // Check if server is running
     if (open("np_balcao", O_RDWR) == -1 ){
@@ -36,6 +49,13 @@ int main(int argc, char **argv){
     printf("Introduza os sintomas do seu problema separados por espaços: ");
     char sintomas[1000];
     scanf("%s", sintomas);
+
+    // config signal
+    struct sigaction action;
+    action.sa_sigaction = handle_sig;
+    action.sa_flags = SA_SIGINFO | SA_RESTART;
+    sigaction(SIGUSR1, &action, NULL); // inicial consulta
+    sigaction(SIGINT, &action, NULL); // avisar que vamos sair
 
     // Enviar sintomas para o servidor
     U_B msg;
@@ -64,9 +84,20 @@ int main(int argc, char **argv){
     // Parse resposta
     int prioridade = resposta.prioridade;
     char *especialidade = resposta.especialidade;
+    int num_medicos = resposta.num_especialistas;
+    int fila_de_espera = resposta.num_utentes;
     printf("Prioridade: %d para a especialidade: %s\n", prioridade, especialidade);
+    printf("Número de médicos disponíveis: %d\n", num_medicos);
+    printf("Número de utentes na fila de espera: %d\n", fila_de_espera);
+    printf("A aguardar ser chamado para consulta...\n");
 
+    while(consulta == 0) {
+        // Wait for signal
+        pause();
+    }
 
+    // consulta pronta, ler pipe para obter medico
+    // abrir pipe do medico e começar consulta
 
     return 0;
 }
