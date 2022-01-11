@@ -13,6 +13,7 @@ struct especialista{
 // Estrutura para comunicação do utente para o balcao
 struct utente_balcao{
   int pid;
+  int tipo;
   char nome[256];
   char msg[256];
 } typedef U_B;
@@ -20,6 +21,9 @@ struct utente_balcao{
 // Estrutura para comunicação do balcao para o utente
 struct balcao_utente{
   int pid;
+  int tipo;
+  char especialidade[256];
+  int prioridade;
   char msg[256];
 } typedef B_U;
 
