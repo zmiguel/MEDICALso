@@ -148,7 +148,7 @@ int main(int argc, char **argv){
     fd_set read_fds;
     struct timeval tv;
 
-    int medico = open(fifo_medico, O_RDONLY | O_NONBLOCK);
+    int medico = open(fifo, O_RDONLY | O_NONBLOCK);
     int sair = 0;
 
     printf("> ");
@@ -190,6 +190,7 @@ int main(int argc, char **argv){
     }while(sair!=1);
 
     // time to leave
+    close(medico);
     unlink(fifo);
 
     return 0;

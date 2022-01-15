@@ -162,7 +162,7 @@ int main(int argc, char **argv){
     fd_set read_fds;
     struct timeval tv;
 
-    int cliente = open(fifo_cliente, O_RDONLY | O_NONBLOCK);
+    int cliente = open(fifo, O_RDONLY | O_NONBLOCK);
     int sair = 0;
 
     printf("> ");
@@ -204,6 +204,7 @@ int main(int argc, char **argv){
     }while(sair!=1);
 
     // time to leave
+    close(cliente);
     unlink(fifo);
 
     return 0;
