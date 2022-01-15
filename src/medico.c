@@ -103,7 +103,7 @@ int main(int argc, char **argv){
     sigaction(SIGUSR1, &action, NULL); // inicial consulta
     sigaction(SIGINT, &action, NULL); // avisar que vamos sair
 
-    // Enviar sintomas para o servidor
+    // Enviar info para o servidor
     M_B msg;
     msg.pid = pid;
     msg.tipo = 1;
@@ -132,65 +132,82 @@ int main(int argc, char **argv){
         return 0;
     }
 
-    while(consulta == 0) {
-        // Wait for signal
-        pause();
-    }
-
-    // consulta pronta, ler pipe para obter medico
-    // abrir pipe do medico e começar consulta
-    char *fifo_cliente = malloc(sizeof(char)*20);
-    sprintf(fifo_cliente, "./cliente-%d", utente_pid);
-
-    // make select system for chat with medico
-
-    int nfd;
-    fd_set read_fds;
-    struct timeval tv;
-
-    int medico = open(fifo, O_RDONLY | O_NONBLOCK);
     int sair = 0;
 
-    printf("> ");
-
-    do{
-        tv.tv_sec = 1;
-        tv.tv_usec = 0;
-
-        FD_ZERO(&read_fds);
-        FD_SET(0, &read_fds); // stdin
-        FD_SET(medico, &read_fds);
-
-        nfd = select(medico+1, &read_fds, NULL, NULL, &tv);
-        if(FD_ISSET(0, &read_fds)){
-            // stdin
-            char msg[1000];
-            fflush(stdin);
-            scanf(" %s", msg);
-            if(strcmp(msg, "adeus") == 0){
-                sair = 1;
-            }
-            else{
-                Consulta consulta_msg;
-                consulta_msg.pid = pid;
-                strcpy(consulta_msg.msg, msg);
-                int cliente = open(fifo_cliente, O_WRONLY);
-                write(cliente, &consulta_msg, sizeof(Consulta));
-                close(cliente);
-                printf("> ");
-            }
+    while(sair != 1){
+        while(consulta == 0) {
+            // Wait for signal
+            pause();
         }
-        if(FD_ISSET(medico, &read_fds)){
-            // medico
-            Consulta resposta_consulta;
-            read(fifo_medico, &resposta_consulta, sizeof(Consulta));
-            printf("%s\n> ", resposta_consulta.msg);
-        }
-        
-    }while(sair!=1);
+
+        // consulta pronta, ler pipe para obter medico
+        // abrir pipe do medico e começar consulta
+        char *fifo_cliente = malloc(sizeof(char)*20);
+        sprintf(fifo_cliente, "./cliente-%d", utente_pid);
+
+        // make select system for chat with medico
+
+        int nfd;
+        fd_set read_fds;
+        struct timeval tv;
+
+        int medico = open(fifo, O_RDONLY | O_NONBLOCK);
+        int adeus = 0;
+
+        printf("> ");
+
+        do{
+            tv.tv_sec = 1;
+            tv.tv_usec = 0;
+
+            FD_ZERO(&read_fds);
+            FD_SET(0, &read_fds); // stdin
+            FD_SET(medico, &read_fds);
+
+            nfd = select(medico+1, &read_fds, NULL, NULL, &tv);
+            if(FD_ISSET(0, &read_fds)){
+                // stdin
+                char msg[1000];
+                fflush(stdin);
+                scanf(" %s", msg);
+                if(strcmp(msg, "adeus") == 0){
+                    // consulta terminada \
+                    Avisar balcao que estamos disponiveis
+                    M_B msg;
+                    msg.pid = pid;
+                    msg.tipo = 2;
+                    int fifo_balcao = open(server_fifo, O_WRONLY);
+                    write(fifo_balcao, &msg, sizeof(M_B));
+                    close(fifo_balcao);
+
+                    adeus = 1;
+                }else if (strcmp(msg, "sair") == 0){
+                    adeus = 1;
+                    sair = 1;
+                } else {
+                    Consulta consulta_msg;
+                    consulta_msg.pid = pid;
+                    strcpy(consulta_msg.msg, msg);
+                    int cliente = open(fifo_cliente, O_WRONLY);
+                    write(cliente, &consulta_msg, sizeof(Consulta));
+                    close(cliente);
+                    printf("> ");
+                }
+            }
+            if(FD_ISSET(medico, &read_fds)){
+                // medico
+                Consulta resposta_consulta;
+                read(fifo_medico, &resposta_consulta, sizeof(Consulta));
+                printf("%s\n> ", resposta_consulta.msg);
+            }
+            
+        }while(adeus!=1);
+
+        close(medico);
+
+    }
 
     // time to leave
-    close(medico);
     unlink(fifo);
 
     return 0;
