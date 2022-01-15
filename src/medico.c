@@ -108,7 +108,7 @@ int main(int argc, char **argv){
     // Enviar info para o servidor
     M_B msg;
     msg.pid = pid;
-    msg.tipo = 1;
+    msg.tipo = 2;
     strcpy(msg.nome, argv[1]);
     strcpy(msg.especialidade, argv[2]);
     int fifo_balcao = open(server_fifo, O_WRONLY);
@@ -177,7 +177,7 @@ int main(int argc, char **argv){
                     Avisar balcao que estamos disponiveis
                     M_B msg;
                     msg.pid = pid;
-                    msg.tipo = 2;
+                    msg.tipo = 3;
                     int fifo_balcao = open(server_fifo, O_WRONLY);
                     write(fifo_balcao, &msg, sizeof(M_B));
                     close(fifo_balcao);

@@ -100,7 +100,7 @@ int main(int argc, char **argv){
     // Perguntar sintomas
     printf("Introduza os sintomas do seu problema separados por espaços: ");
     char sintomas[1000];
-    scanf("%s", sintomas);
+    fgets(sintomas, sizeof(sintomas)-1, stdin);
 
     // config signal
     struct sigaction action;
