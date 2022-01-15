@@ -21,8 +21,10 @@ int utente_pid = 0;
 void handle_sig(int signo, siginfo_t *info, void *context){
     // SIGUSR1
     if(signo == 10){
-        consulta = 1;
-        utente_pid = info->si_value.sival_int;
+        if(consulta == 0){
+            consulta = 1;
+            utente_pid = info->si_value.sival_int;
+        }
     }
     // SIGINT aka CTRL+C
     if(signo == 2){
@@ -180,6 +182,7 @@ int main(int argc, char **argv){
                     write(fifo_balcao, &msg, sizeof(M_B));
                     close(fifo_balcao);
 
+                    consulta = 0;
                     adeus = 1;
                 }else if (strcmp(msg, "sair") == 0){
                     adeus = 1;
