@@ -32,6 +32,7 @@ struct balcao_utente{
 // Estrutura para comunicação do medico para o balcao
 struct medico_balcao{
   int pid;
+  int tipo;
   char nome[256];
   char especialidade[256];
 } typedef M_B;
@@ -39,13 +40,14 @@ struct medico_balcao{
 // Estrutura para comunicação do balcao para o medico
 struct balcao_medico{
   int pid;
+  int tipo;
   char msg[256];
 } typedef B_M;
 
 // Estrutura para comunicação entre utente e o medico
 struct utente_medico{
   int pid;
-  char msg[256];
+  char msg[1000];
 } typedef Consulta;
 
 int sum(int one, int two);
