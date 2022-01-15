@@ -10,13 +10,13 @@ struct especialista{
   char especialidade[256];
 } typedef Especialista;
 
-// Estrutura para comunicação do utente para o balcao
-struct utente_balcao{
+// Estrutura para comunicação dos cliente para o balcao
+struct cliente_balcao{
   int pid;
   int tipo;
   char nome[256];
   char msg[256];
-} typedef U_B;
+} typedef C_B;
 
 // Estrutura para comunicação do balcao para o utente
 struct balcao_utente{
@@ -28,14 +28,6 @@ struct balcao_utente{
   int num_especialistas;
   char msg[256];
 } typedef B_U;
-
-// Estrutura para comunicação do medico para o balcao
-struct medico_balcao{
-  int pid;
-  int tipo;
-  char nome[256];
-  char especialidade[256];
-} typedef M_B;
 
 // Estrutura para comunicação do balcao para o medico
 struct balcao_medico{

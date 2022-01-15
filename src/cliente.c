@@ -110,13 +110,13 @@ int main(int argc, char **argv){
     sigaction(SIGINT, &action, NULL); // avisar que vamos sair
 
     // Enviar sintomas para o servidor
-    U_B msg;
+    C_B msg;
     msg.pid = pid;
     msg.tipo = 1;
     strcpy(msg.nome, argv[1]);
     strcpy(msg.msg, sintomas);
     int fifo_balcao = open(server_fifo, O_WRONLY);
-    write(fifo_balcao, &msg, sizeof(U_B));
+    write(fifo_balcao, &msg, sizeof(C_B));
     close(fifo_balcao);
 
     // Receber resposta do servidor

@@ -106,13 +106,13 @@ int main(int argc, char **argv){
     sigaction(SIGINT, &action, NULL); // avisar que vamos sair
 
     // Enviar info para o servidor
-    M_B msg;
+    C_B msg;
     msg.pid = pid;
     msg.tipo = 2;
     strcpy(msg.nome, argv[1]);
-    strcpy(msg.especialidade, argv[2]);
+    strcpy(msg.msg, argv[2]);
     int fifo_balcao = open(server_fifo, O_WRONLY);
-    write(fifo_balcao, &msg, sizeof(M_B));
+    write(fifo_balcao, &msg, sizeof(C_B));
     close(fifo_balcao);
 
     // Receber resposta do servidor
@@ -175,11 +175,11 @@ int main(int argc, char **argv){
                 if(strcmp(msg, "adeus") == 0){
                     // consulta terminada \
                     Avisar balcao que estamos disponiveis
-                    M_B msg;
+                    C_B msg;
                     msg.pid = pid;
                     msg.tipo = 3;
                     int fifo_balcao = open(server_fifo, O_WRONLY);
-                    write(fifo_balcao, &msg, sizeof(M_B));
+                    write(fifo_balcao, &msg, sizeof(C_B));
                     close(fifo_balcao);
 
                     consulta = 0;
