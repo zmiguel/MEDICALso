@@ -16,14 +16,14 @@
 // Global variables
 int balcao_pid = 0;
 int consulta = 0;
-int utente_pid = 0;
+int medico_pid = 0;
 
 void handle_sig(int signo, siginfo_t *info, void *context){
     // SIGUSR1
     if(signo == 10){
         if(consulta == 0){
             consulta = 1;
-            utente_pid = info->si_value.sival_int;
+            medico_pid = info->si_value.sival_int;
         }
     }
     // SIGINT aka CTRL+C
@@ -43,7 +43,7 @@ void handle_sig(int signo, siginfo_t *info, void *context){
         }else if (balcao_pid != 0 && consulta == 1){
             // we have talked to balcao and medico
             const union sigval val = { .sival_int = getpid() };
-            sigqueue(utente_pid, SIGUSR2, val);
+            sigqueue(medico_pid, SIGUSR2, val);
         }else{
             // something unexpected happened
             printf("Something unexpected happened\n");
@@ -66,7 +66,7 @@ void handle_sig(int signo, siginfo_t *info, void *context){
             unlink(fifo);
         }
         // check if medico
-        if(info->si_pid == utente_pid){
+        if(info->si_pid == medico_pid){
             // medico told us they are leving... 
             // idk what to do here...
             printf("Medico terminou...n");
@@ -156,7 +156,7 @@ int main(int argc, char **argv){
     // consulta pronta, ler pipe para obter medico
     // abrir pipe do medico e começar consulta
     char *fifo_medico = malloc(sizeof(char)*20);
-    sprintf(fifo_medico, "./medico-%d", utente_pid);
+    sprintf(fifo_medico, "./medico-%d", medico_pid);
 
     // make select system for chat with medico
 
