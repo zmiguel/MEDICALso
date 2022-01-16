@@ -83,18 +83,26 @@ int max(int a, int b) {
     return (a>b) ? a : b;
 }
 
-int contaClientes(int maxClientes, Utente matriz[][maxClientes]) {
+int contaClientes(int maxClientes, Utente *utentes) {
     int cont = 0;
-    int i,j;
+    int i;
 
-    for (i = 0;i < 5; i++) {
-        for (j = 0; j < maxClientes; j++) {
-            if(matriz[i][j].especialidade[0] != '\0') {
-                cont++;
-            }
+    for (i = 0; i < maxClientes; i++) {
+        if(utentes[i].especialidade[0] != '\0') {
+            cont++;
         }
     }
-    printf("Numero de clientes: %d", cont);
+
+    return cont;
+}
+
+int somaFilas(int *array) {
+    int cont = 0;
+    int i;
+
+    for(i = 0; i< 5; i++) {
+        cont = array[i];
+    }
 
     return cont;
 }
@@ -141,6 +149,7 @@ int main(int argc, char **argv, char **envp) {
     char sintomas[1000];
     int i, j, res;
     int s_c_fifo_fd, s_m_fifo_fd;
+    int freq = 30;
     fd_set read_fds;
     int nfd;
     struct timeval tv;
@@ -157,14 +166,12 @@ int main(int argc, char **argv, char **envp) {
     maxClientes = atoi(getenv("MAXCLIENTES"));
     maxMedicos = atoi(getenv("MAXMEDICOS"));
 
-    Utente utentes[5][maxClientes];
+    Utente utentes[maxClientes];
 
     // iniciar utentes a zero
-    for(i = 0; i < 5; i++) {
-        for(j = 0; j < maxClientes; j++) {
-            utentes[i][j].especialidade[0] = '\0';
-            utentes[i][j].prioridade = 0;
-        }
+    for(i = 0; i < maxClientes; i++) {
+        utentes[i].especialidade[0] = '\0';
+        utentes[i].prioridade = 0;
     }
 
     Especialista medicos[maxMedicos];
@@ -201,87 +208,68 @@ int main(int argc, char **argv, char **envp) {
         }
 
         if (FD_ISSET(0, & read_fds)) {
-            /* printf("Indique os sintomas: ");
-            fgets(sintomas, sizeof(sintomas)-1, stdin);
-            char especialidade[256];
-            int prioridade=0;
-            char temp[256];
-            int debug_read = 0;
+            char comando[256];
+            scanf(" %255[^\n]", comando);
+            if (strcmp(comando, "utentes") == 0) {
+                int i, j;
+                printf("Utentes\n\n");
+                for (i=0;i<maxClientes;i++) {
+                    if (utentes[i].especialidade[0] != '\0') {
+                        printf("Nome: %s\tEspecialidade: %s\tPrioridade: %d\n", utentes[i].nome, utentes[i].especialidade, utentes[i].prioridade);
+                    }
+                }
+            } else if (strcmp(comando, "especialistas") == 0) {
+                int i;
+                printf("Especialistas\n\n");
+                for (i=0;i<maxMedicos;i++){
+                    if(medicos[i].especialidade[0] != '\0'){
+                        printf("Nome: %s\tEspecialidade: %s\n", medicos[i].nome, medicos[i].especialidade);
+                    }
+                }
+            } else if (strcmp(comando, "encerra") == 0) {
+                printf("A terminar o sistema...\n");
+                write(to_class, "sair", strlen("sair"));
+                close(s_c_fifo_fd);
+                unlink(SERVER_FIFO_CLIENTES);
+                for (i=0;i<maxClientes;i++){
+                    if (utentes[i].especialidade[0] != '\0') {
+                        kill(utentes[i].pid, SIGUSR2);
+                    }
+                }
+                for (i=0; i<maxMedicos; i++) {
+                    kill(medicos[i].pid, SIGUSR2);
+                }
 
-            if(strcmp(sintomas, "sair\n") == 0) {
-                char sair[] = "#fim\n";
-                write(to_class, sair, strlen(sair));
                 return 0;
-            }
-            
-            // enviar sintomas ao classificador
-            write(to_class, sintomas, strlen(sintomas));
-            // receber resposta do classificador
-            debug_read = read(from_class, temp, sizeof(temp)-1);
-            if(debug_read == -1) {
-                printf("erro ao ler do classificador\n");
-                return 0;
-            }
-            temp[debug_read] = '\0';
-            // separar resposta
-            sscanf(temp, "%s %d", especialidade, &prioridade);
-            
-            if(strcmp(especialidade, "geral") == 0 && filas[0] < 5) {
-                strcpy(utenteNovo.especialidade, especialidade);
-                utenteNovo.prioridade = prioridade;
-                strcpy(utenteNovo.nome, "John Doe");
-                utentes[0][filas[0]] = utenteNovo;
-                filas[0]++;
-            }
-            else {
-                if(strcmp(especialidade, "ortopedia") == 0 && filas[1] < 5) {
-                    strcpy(utenteNovo.especialidade, especialidade);
-                    utenteNovo.prioridade = prioridade;
-                    strcpy(utenteNovo.nome, "John Doe");
-                    utentes[1][filas[1]] = utenteNovo;
-                    filas[1]++;
-                }
-                else {
-                    if(strcmp(especialidade, "estomatologia") == 0 && filas[2] < 5) {
-                        strcpy(utenteNovo.especialidade, especialidade);
-                        utenteNovo.prioridade = prioridade;
-                        strcpy(utenteNovo.nome, "John Doe");
-                        utentes[2][filas[2]] = utenteNovo;
-                        filas[2]++;
-                    }
-                    else {
-                        if(strcmp(especialidade, "neurologia") == 0 && filas[3] < 5) {
-                            strcpy(utenteNovo.especialidade, especialidade);
-                            utenteNovo.prioridade = prioridade;
-                            strcpy(utenteNovo.nome, "John Doe");
-                            utentes[3][filas[3]] = utenteNovo;
-                            filas[3]++;
-                        }
-                        else {
-                            if(strcmp(especialidade, "oftalmologia") == 0 && filas[4] < 5) {
-                                strcpy(utenteNovo.especialidade, especialidade);
-                                utenteNovo.prioridade = prioridade;
-                                strcpy(utenteNovo.nome, "John Doe");
-                                utentes[4][filas[4]] = utenteNovo;
-                                filas[4]++;
-                            }
-                            else {
-                                printf("Especialidade nao existe ou filas cheias!\n");
-                                continue;
-                            }
+            } else {
+                char *com, *resto, *contexto;
+                com = strtok_r(comando, " ", &contexto);
+                resto = contexto;
+                printf("Comando: %s\tResto: %s\n", com, resto);
+                if (strcmp(com, "delut") == 0) {
+                    for (i = 0;i< maxClientes; i++) {
+                        if(strcmp(resto, utentes[i].nome) == 0) {
+                            kill(utentes[i].pid, SIGUSR2);
+                            utentes[i].especialidade[0] = '\0';
+                            printf("Cliente eliminado!\n");
                         }
                     }
-                }
-            }
-            printf("----------\nTodos os utentes:\n");
-            for(i=0;i<5;i++) {
-                for(j=0;j<5;j++) {
-                    if(utentes[i][j].especialidade[0] != '\0') {
-                        printf("Especialidade: %s\tPrioridade: %d\n", utentes[i][j].especialidade, utentes[i][j].prioridade);
+                } else if (strcmp(com, "delesp") == 0) {
+                    for (i = 0;i< maxMedicos; i++) {
+                        if(strcmp(resto, medicos[i].nome) == 0) {
+                            kill(medicos[i].pid, SIGUSR2);
+                            medicos[i].especialidade[0] = '\0';
+                            printf("Especialista eliminado!\n");
+                        }
                     }
+                    numMedicos--;
+                }else if (strcmp(com, "freq") == 0) { 
+                    int nova = atoi(resto);
+                    freq = nova;
+                } else {
+                    printf("Comando invalido!\n");
                 }
             }
-            printf("----------\n"); */
         }
         if (FD_ISSET(s_c_fifo_fd, & read_fds)) {
             C_B buffer;
@@ -322,31 +310,31 @@ int main(int argc, char **argv, char **envp) {
                     strcpy(utenteNovo.nome, buffer.nome);
 
                     if(strcmp(msg_cli.especialidade, "geral") == 0 && filas[0] < 5) {
-                        utentes[0][filas[0]] = utenteNovo;
+                        utentes[somaFilas(filas)]= utenteNovo;
                         filas[0]++;
                         msg_cli.num_utentes = filas[0];
                     }
                     else {
                         if(strcmp(msg_cli.especialidade, "ortopedia") == 0 && filas[1] < 5) {
-                            utentes[1][filas[1]] = utenteNovo;
+                            utentes[somaFilas(filas)] = utenteNovo;
                             filas[1]++;
                             msg_cli.num_utentes = filas[1];
                         }
                         else {
                             if(strcmp(msg_cli.especialidade, "estomatologia") == 0 && filas[2] < 5) {
-                                utentes[2][filas[2]] = utenteNovo;
+                                utentes[somaFilas(filas)] = utenteNovo;
                                 filas[2]++;
                                 msg_cli.num_utentes = filas[2];
                             }
                             else {
                                 if(strcmp(msg_cli.especialidade, "neurologia") == 0 && filas[3] < 5) {
-                                    utentes[3][filas[3]] = utenteNovo;
+                                    utentes[somaFilas(filas)] = utenteNovo;
                                     filas[3]++;
                                     msg_cli.num_utentes = filas[3];
                                 }
                                 else {
                                     if(strcmp(msg_cli.especialidade, "oftalmologia") == 0 && filas[4] < 5) {
-                                        utentes[4][filas[4]] = utenteNovo;
+                                        utentes[somaFilas(filas)] = utenteNovo;
                                         filas[4]++;
                                         msg_cli.num_utentes = filas[4];
                                     }
@@ -380,6 +368,7 @@ int main(int argc, char **argv, char **envp) {
                     medicos[numMedicos].pid = buffer.pid;
                     numMedicos++;
                     msg_med.pid = getpid();
+                    msg_med.tipo = 1;
                     write(fifo_medico, &msg_med, sizeof(msg_med));
                     close(fifo_medico);
                 }

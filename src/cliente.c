@@ -59,17 +59,18 @@ void handle_sig(int signo, siginfo_t *info, void *context){
         if(info->si_pid == balcao_pid){
             // balcao told us they are leving... 
             // we must close!
-            printf("Balcao terminou...n");
+            printf("Balcao terminou...\n");
             printf("Exiting...\n");
             char *fifo = malloc(sizeof(char)*20);
             sprintf(fifo, "./cliente-%d", getpid());
             unlink(fifo);
+            exit(0);
         }
         // check if medico
         if(info->si_pid == medico_pid){
             // medico told us they are leving... 
             // idk what to do here...
-            printf("Medico terminou...n");
+            printf("Medico terminou...\n");
             printf("Exiting...\n");
             char *fifo = malloc(sizeof(char)*20);
             sprintf(fifo, "./cliente-%d", getpid());
