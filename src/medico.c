@@ -87,6 +87,17 @@ void handle_sig(int signo, siginfo_t *info, void *context){
             unlink(fifo);
         }
     }
+    if(signo == SIGALRM) {
+        C_B msg;
+        msg.tipo = 4;
+        msg.ts = (unsigned int)time(NULL);
+        msg.pid = getpid();
+        char *server_fifo = "./np_balcao";
+        int fifo_balcao = open(server_fifo, O_WRONLY);
+        write(fifo_balcao, &msg, sizeof(C_B));
+        close(fifo_balcao);
+        alarm(5);
+    }
 }
 
 int main(int argc, char **argv){
@@ -116,6 +127,7 @@ int main(int argc, char **argv){
     sigaction(SIGUSR1, &action, NULL); // inicial consulta
     sigaction(SIGUSR2, &action, NULL); // inicial consulta
     sigaction(SIGINT, &action, NULL); // avisar que vamos sair
+    sigaction(SIGALRM, &action, NULL);
 
     // Enviar info para o servidor
     C_B msg;
@@ -123,6 +135,7 @@ int main(int argc, char **argv){
     msg.tipo = 2;
     strcpy(msg.nome, argv[1]);
     strcpy(msg.msg, argv[2]);
+    msg.ts = (unsigned int)time(NULL);
     int fifo_balcao = open(server_fifo, O_WRONLY);
     write(fifo_balcao, &msg, sizeof(C_B));
     close(fifo_balcao);
@@ -147,6 +160,7 @@ int main(int argc, char **argv){
     }
 
     int sair = 0;
+    alarm(5);
 
     while(sair != 1){
         while(consulta == 0) {

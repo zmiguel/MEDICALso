@@ -163,7 +163,7 @@ int main(int argc, char **argv, char **envp) {
     sigaction(SIGINT, &action, NULL); // avisar que vamos sair
     sigaction(SIGUSR2, &action, NULL); // Avisaram que sairam
     sigaction(SIGALRM, &action, NULL); // Avisaram que sairam
-    alarm(10);
+    alarm(6);
     // definição de variáveis
     int numMedicos = 0;
     Utente utenteNovo;
@@ -248,7 +248,7 @@ int main(int argc, char **argv, char **envp) {
                 int i;
                 printf("Especialistas\n\n");
                 for (i=0;i<maxMedicos;i++){
-                    if(medicos[i].especialidade[0] != '\0'){
+                    if(medicos[i].pid != 0){
                         printf("Nome: %s\tEspecialidade: %s\n", medicos[i].nome, medicos[i].especialidade);
                     }
                 }
@@ -263,7 +263,9 @@ int main(int argc, char **argv, char **envp) {
                     }
                 }
                 for (i=0; i<maxMedicos; i++) {
-                    kill(medicos[i].pid, SIGUSR2);
+                    if(medicos[i].pid != 0){
+                        kill(medicos[i].pid, SIGUSR2);
+                    }
                 }
 
                 return 0;
@@ -284,7 +286,7 @@ int main(int argc, char **argv, char **envp) {
                     for (i = 0;i< maxMedicos; i++) {
                         if(strcmp(resto, medicos[i].nome) == 0) {
                             kill(medicos[i].pid, SIGUSR2);
-                            medicos[i].especialidade[0] = '\0';
+                            medicos[i].pid = 0;
                             printf("Especialista eliminado!\n");
                         }
                     }
@@ -403,11 +405,13 @@ int main(int argc, char **argv, char **envp) {
                     strcpy(medicos[numMedicos].nome, buffer.nome);
                     strcpy(medicos[numMedicos].especialidade, buffer.msg);
                     medicos[numMedicos].pid = buffer.pid;
+                    medicos[numMedicos].ts = buffer.ts;
                     numMedicos++;
                     msg_med.pid = getpid();
                     msg_med.tipo = 1;
                     write(fifo_medico, &msg_med, sizeof(B_M));
                     close(fifo_medico);
+                    printf("medico adicionado!\n");
                 }
             }
             // medico terminou consulta
@@ -427,7 +431,7 @@ int main(int argc, char **argv, char **envp) {
                 for(i=0; i<maxMedicos; i++) {
                     if(medicos[i].pid == buffer.pid) {
                         medicos[i].ts = buffer.ts;
-                        //printf("Timestamp do medico %d: %d\n", buffer.pid, buffer.ts);
+                        printf("Timestamp do medico %d: %d\n", buffer.pid, buffer.ts);
                     }
                 }
             }
