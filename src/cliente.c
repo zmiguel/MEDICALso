@@ -92,7 +92,7 @@ void handle_sig(int signo, siginfo_t *info, void *context){
 
 int main(int argc, char **argv){
     // Check if server is running
-    if (open("np_balcao", O_RDWR) == -1 ){
+    if (open("np_balcao", O_RDWR | O_NONBLOCK) == -1 ){
         printf("Servidor não encontrado.\n");
         return 0;
     }
@@ -128,7 +128,7 @@ int main(int argc, char **argv){
     msg.tipo = 1;
     strcpy(msg.nome, argv[1]);
     strcpy(msg.msg, sintomas);
-    int fifo_balcao = open(server_fifo, O_WRONLY);
+    int fifo_balcao = open(server_fifo, O_WRONLY | O_NONBLOCK);
     write(fifo_balcao, &msg, sizeof(C_B));
     close(fifo_balcao);
 
@@ -165,6 +165,7 @@ int main(int argc, char **argv){
         // Wait for signal
         pause();
     }
+    setbuf(stdout, NULL);
 
     // consulta pronta, ler pipe para obter medico
     // abrir pipe do medico e começar consulta
@@ -195,7 +196,7 @@ int main(int argc, char **argv){
             // stdin
             char msg[1000];
             fflush(stdin);
-            scanf(" %s", msg);
+            scanf(" %999[^\n]", msg);
             if(strcmp(msg, "adeus") == 0){
                 sair = 1;
             }
@@ -203,10 +204,11 @@ int main(int argc, char **argv){
                 Consulta consulta_msg;
                 consulta_msg.pid = pid;
                 strcpy(consulta_msg.msg, msg);
-                int medico = open(fifo_medico, O_WRONLY);
+                int medico = open(fifo_medico, O_WRONLY | O_NONBLOCK);
                 write(medico, &consulta_msg, sizeof(Consulta));
                 close(medico);
                 printf("> ");
+                setbuf(stdout, NULL);
             }
             fflush(stdin);
         }
@@ -215,6 +217,7 @@ int main(int argc, char **argv){
             Consulta resposta_consulta;
             read(cliente, &resposta_consulta, sizeof(Consulta));
             printf("%s\n> ", resposta_consulta.msg);
+            setbuf(stdout, NULL);
         }
         
     }while(sair!=1);
