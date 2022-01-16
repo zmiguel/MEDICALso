@@ -3,11 +3,13 @@ struct utente{
   char nome[256];
   char especialidade[256];
   int prioridade;
+  int pid;
 } typedef Utente;
 
 struct especialista{
   char nome[256];
   char especialidade[256];
+  int pid;
 } typedef Especialista;
 
 // Estrutura para comunicação dos cliente para o balcao
