@@ -14,26 +14,6 @@
 #define SERVER_FIFO_CLIENTES "np_balcao"
 #define CLIENTE_FIFO "cliente-%d"
 
-int max(int a, int b) {
-    return (a>b) ? a : b;
-}
-
-int contaClientes(int maxClientes, Utente matriz[][maxClientes]) {
-    int cont = 0;
-    int i,j;
-
-    for (i = 0;i < 5; i++) {
-        for (j = 0; j < maxClientes; j++) {
-            if(matriz[i][j].especialidade[0] != '\0') {
-                cont++;
-            }
-        }
-    }
-    printf("Numero de clientes: %d", cont);
-
-    return cont;
-}
-
 void handle_sig(int signo, siginfo_t *info, void *context){
     // SIGUSR1
     /*
@@ -97,6 +77,26 @@ void handle_sig(int signo, siginfo_t *info, void *context){
    if (signo == SIGINT) {
        unlink(SERVER_FIFO_CLIENTES);
    }
+}
+
+int max(int a, int b) {
+    return (a>b) ? a : b;
+}
+
+int contaClientes(int maxClientes, Utente matriz[][maxClientes]) {
+    int cont = 0;
+    int i,j;
+
+    for (i = 0;i < 5; i++) {
+        for (j = 0; j < maxClientes; j++) {
+            if(matriz[i][j].especialidade[0] != '\0') {
+                cont++;
+            }
+        }
+    }
+    printf("Numero de clientes: %d", cont);
+
+    return cont;
 }
 
 int main(int argc, char **argv, char **envp) {
