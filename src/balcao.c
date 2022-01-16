@@ -90,7 +90,7 @@ void handle_sig(int signo, siginfo_t *info, void *context){
                             // set the medico timestamp
                             medicos[j].ts = (unsigned int)time(NULL);
                             got_medico = 1;
-                            printf("Medico %s vai dar consulta ao utente %s\n", utentes[i].nome, medicos[j].nome);
+                            printf("Medico %s vai dar consulta ao utente %s\n", medicos[j].nome, utentes[i].nome);
                             break;
                         }
                     }
