@@ -157,7 +157,7 @@ int main(int argc, char **argv, char **envp) {
     maxClientes = atoi(getenv("MAXCLIENTES"));
     maxMedicos = atoi(getenv("MAXMEDICOS"));
 
-    Utente utentes[0][maxClientes];
+    Utente utentes[5][maxClientes];
 
     // iniciar utentes a zero
     for(i = 0; i < 5; i++) {
@@ -294,7 +294,6 @@ int main(int argc, char **argv, char **envp) {
                 perror("erro a ler do cliente\n");
                 continue;
             }
-            
             if (buffer.tipo == 1) {
                 B_U msg_cli;
                 char fifo[256];
