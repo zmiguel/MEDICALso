@@ -107,6 +107,7 @@ int main(int argc, char **argv){
     action.sa_sigaction = handle_sig;
     action.sa_flags = SA_SIGINFO | SA_RESTART;
     sigaction(SIGUSR1, &action, NULL); // inicial consulta
+    sigaction(SIGUSR2, &action, NULL); // inicial consulta
     sigaction(SIGINT, &action, NULL); // avisar que vamos sair
 
     // Enviar sintomas para o servidor
