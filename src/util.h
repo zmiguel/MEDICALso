@@ -41,5 +41,3 @@ struct utente_medico{
   int pid;
   char msg[1000];
 } typedef Consulta;
-
-int sum(int one, int two);
