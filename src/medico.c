@@ -81,10 +81,7 @@ void handle_sig(int signo, siginfo_t *info, void *context){
             // medico told us they are leving... 
             // idk what to do here...
             printf("cliente terminou...\n");
-            printf("Exiting...\n");
-            char *fifo = malloc(sizeof(char)*20);
-            sprintf(fifo, "./medico-%d", getpid());
-            unlink(fifo);
+            consulta = 0;
         }
     }
     if(signo == SIGALRM) {
@@ -222,6 +219,7 @@ int main(int argc, char **argv){
                     close(cliente);
                     printf("> ");
                 }
+                fflush(stdin);
             }
             if(FD_ISSET(medico, &read_fds)){
                 // medico

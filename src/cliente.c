@@ -85,6 +85,7 @@ void handle_sig(int signo, siginfo_t *info, void *context){
             char *fifo = malloc(sizeof(char)*20);
             sprintf(fifo, "./cliente-%d", getpid());
             unlink(fifo);
+            exit(0);
         }
     }
 }
@@ -207,11 +208,12 @@ int main(int argc, char **argv){
                 close(medico);
                 printf("> ");
             }
+            fflush(stdin);
         }
         if(FD_ISSET(cliente, &read_fds)){
             // medico
             Consulta resposta_consulta;
-            read(fifo_cliente, &resposta_consulta, sizeof(Consulta));
+            read(cliente, &resposta_consulta, sizeof(Consulta));
             printf("%s\n> ", resposta_consulta.msg);
         }
         

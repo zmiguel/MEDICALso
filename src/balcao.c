@@ -43,7 +43,7 @@ void handle_sig(int signo, siginfo_t *info, void *context){
     if(signo == 12){
         // check if cliente
         for(i=0; i<maxClientes; i++){
-            if(utentes[i].pid != 0 && utentes[i].pid == info->si_pid){
+            if(utentes[i].pid == info->si_pid){
                 // cliente told us they are leving...
                 utentes[i].pid = 0;
                 utentes[i].especialidade[0] = '\0';
@@ -51,7 +51,7 @@ void handle_sig(int signo, siginfo_t *info, void *context){
         }
         // check if medico
         for(i=0; i<maxMedicos; i++){
-            if(medicos[i].pid != 0 && medicos[i].pid == info->si_pid){
+            if(medicos[i].pid == info->si_pid){
                 // medico told us they are leving...
                 medicos[i].pid = 0;
                 medicos[i].especialidade[0] = '\0';
@@ -90,6 +90,7 @@ void handle_sig(int signo, siginfo_t *info, void *context){
                             // set the medico timestamp
                             medicos[j].ts = (unsigned int)time(NULL);
                             got_medico = 1;
+                            printf("Medico %s vai dar consulta ao utente %s\n", utentes[i].nome, medicos[j].nome);
                             break;
                         }
                     }
