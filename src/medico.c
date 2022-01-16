@@ -93,16 +93,16 @@ void handle_sig(int signo, siginfo_t *info, void *context){
         msg.ts = (unsigned int)time(NULL);
         msg.pid = getpid();
         char *server_fifo = "./np_balcao";
-        int fifo_balcao = open(server_fifo, O_WRONLY);
+        int fifo_balcao = open(server_fifo, O_WRONLY | O_NONBLOCK);
         write(fifo_balcao, &msg, sizeof(C_B));
         close(fifo_balcao);
-        alarm(5);
+        alarm(20);
     }
 }
 
 int main(int argc, char **argv){
     // Check if server is running
-    if (open("np_balcao", O_RDWR) == -1 ){
+    if (open("np_balcao", O_RDWR | O_NONBLOCK) == -1 ){
         printf("Servidor não encontrado.\n");
         return 0;
     }
@@ -128,6 +128,7 @@ int main(int argc, char **argv){
     sigaction(SIGUSR2, &action, NULL); // inicial consulta
     sigaction(SIGINT, &action, NULL); // avisar que vamos sair
     sigaction(SIGALRM, &action, NULL);
+    setbuf(stdout, NULL);
 
     // Enviar info para o servidor
     C_B msg;
@@ -136,7 +137,7 @@ int main(int argc, char **argv){
     strcpy(msg.nome, argv[1]);
     strcpy(msg.msg, argv[2]);
     msg.ts = (unsigned int)time(NULL);
-    int fifo_balcao = open(server_fifo, O_WRONLY);
+    int fifo_balcao = open(server_fifo, O_WRONLY | O_NONBLOCK);
     write(fifo_balcao, &msg, sizeof(C_B));
     close(fifo_balcao);
 
@@ -160,7 +161,7 @@ int main(int argc, char **argv){
     }
 
     int sair = 0;
-    alarm(5);
+    alarm(20);
 
     while(sair != 1){
         while(consulta == 0) {
@@ -197,14 +198,14 @@ int main(int argc, char **argv){
                 // stdin
                 char msg[1000];
                 fflush(stdin);
-                scanf(" %s", msg);
+                scanf(" %999[^\n]", msg);
                 if(strcmp(msg, "adeus") == 0){
                     // consulta terminada \
                     Avisar balcao que estamos disponiveis
                     C_B msg;
                     msg.pid = pid;
                     msg.tipo = 3;
-                    int fifo_balcao = open(server_fifo, O_WRONLY);
+                    int fifo_balcao = open(server_fifo, O_WRONLY | O_NONBLOCK);
                     write(fifo_balcao, &msg, sizeof(C_B));
                     close(fifo_balcao);
 
@@ -217,17 +218,19 @@ int main(int argc, char **argv){
                     Consulta consulta_msg;
                     consulta_msg.pid = pid;
                     strcpy(consulta_msg.msg, msg);
-                    int cliente = open(fifo_cliente, O_WRONLY);
+                    int cliente = open(fifo_cliente, O_WRONLY | O_NONBLOCK);
                     write(cliente, &consulta_msg, sizeof(Consulta));
                     close(cliente);
                     printf("> ");
+                    setbuf(stdout, NULL);
                 }
             }
             if(FD_ISSET(medico, &read_fds)){
                 // medico
                 Consulta resposta_consulta;
-                read(fifo_medico, &resposta_consulta, sizeof(Consulta));
+                read(medico, &resposta_consulta, sizeof(Consulta));
                 printf("%s\n> ", resposta_consulta.msg);
+                setbuf(stdout, NULL);
             }
             
         }while(adeus!=1);

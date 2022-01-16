@@ -96,7 +96,7 @@ void handle_sig(int signo, siginfo_t *info, void *context){
                 }
             }
         }
-        alarm(10);
+        alarm(20);
     }
 }
 
@@ -163,7 +163,7 @@ int main(int argc, char **argv, char **envp) {
     sigaction(SIGINT, &action, NULL); // avisar que vamos sair
     sigaction(SIGUSR2, &action, NULL); // Avisaram que sairam
     sigaction(SIGALRM, &action, NULL); // Avisaram que sairam
-    alarm(6);
+    alarm(20);
     // definição de variáveis
     int numMedicos = 0;
     Utente utenteNovo;
@@ -314,7 +314,7 @@ int main(int argc, char **argv, char **envp) {
                 B_U msg_cli;
                 char fifo[256];
                 sprintf(fifo, "./cliente-%d", buffer.pid);
-                int fifo_cliente = open(fifo, O_WRONLY);
+                int fifo_cliente = open(fifo, O_WRONLY | O_NONBLOCK);
 
                 if (contaClientes(maxClientes, utentes) >= maxClientes) {
                     strcpy(msg_cli.msg, "Nao e possivel aceitar mais clientes!");
@@ -388,13 +388,14 @@ int main(int argc, char **argv, char **envp) {
                     msg_cli.num_especialistas = numMedicos;
                     write(fifo_cliente, &msg_cli, sizeof(B_U));
                     close(fifo_cliente);
+                    printf("Utente adicionado!\n");
                 }
             }
             // medico
             if (buffer.tipo == 2) {
                 char fifo_med[256];
                 sprintf(fifo_med, "./medico-%d", buffer.pid);
-                int fifo_medico = open(fifo_med, O_WRONLY);
+                int fifo_medico = open(fifo_med, O_WRONLY | O_NONBLOCK);
                 B_M msg_med;
                 if (numMedicos >= maxMedicos) {
                     strcpy(msg_med.msg, "Nao e possivel receber mais medicos!");
@@ -423,7 +424,6 @@ int main(int argc, char **argv, char **envp) {
                         printf("Especialista Terminou consulta!\n");
                     }
                 }
-                numMedicos--;
             }
             // get time
             if(buffer.tipo == 4) {
