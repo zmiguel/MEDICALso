@@ -40,11 +40,19 @@ void handle_sig(int signo, siginfo_t *info, void *context){
             // we have talked to balcao but not medico
             const union sigval val = { .sival_int = getpid() };
             sigqueue(balcao_pid, SIGUSR2, val);
+            char *fifo = malloc(sizeof(char)*20);
+            sprintf(fifo, "./medico-%d", getpid());
+            unlink(fifo);
+            exit(1);
         }else if (balcao_pid != 0 && consulta == 1){
             // we have talked to balcao and medico
             const union sigval val = { .sival_int = getpid() };
             sigqueue(utente_pid, SIGUSR2, val);
             sigqueue(balcao_pid, SIGUSR2, val);
+            char *fifo = malloc(sizeof(char)*20);
+            sprintf(fifo, "./medico-%d", getpid());
+            unlink(fifo);
+            exit(1);
         }else{
             // something unexpected happened
             printf("Something unexpected happened\n");

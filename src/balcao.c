@@ -37,6 +37,7 @@ void handle_sig(int signo, siginfo_t *info, void *context){
         }
         // close our pipe
         unlink(SERVER_FIFO_CLIENTES);
+        exit(1);
     }
     // SIGUSR2 someone told us they left...
     if(signo == 12){
@@ -202,12 +203,12 @@ int main(int argc, char **argv, char **envp) {
             fflush(stdout);
             continue;
         }
-        if (nfd == -1) {
+        /*if (nfd == -1) {
             perror("\nerro no select");
             close(s_c_fifo_fd);
             unlink(SERVER_FIFO_CLIENTES);
             return EXIT_FAILURE;
-        }
+        }*/
 
         if (FD_ISSET(0, & read_fds)) {
             char comando[256];
@@ -279,7 +280,7 @@ int main(int argc, char **argv, char **envp) {
             char temp[256];
             int debug_read = 0;
 
-            bytes = read(s_c_fifo_fd, &buffer, sizeof(buffer));
+            bytes = read(s_c_fifo_fd, &buffer, sizeof(C_B));
             if (bytes == -1) {
                 perror("erro a ler do cliente\n");
                 continue;
@@ -292,7 +293,7 @@ int main(int argc, char **argv, char **envp) {
 
                 if (contaClientes(maxClientes, utentes) >= maxClientes) {
                     strcpy(msg_cli.msg, "Nao e possivel aceitar mais clientes!");
-                    write(fifo_cliente, &msg_cli, sizeof(msg_cli));
+                    write(fifo_cliente, &msg_cli, sizeof(B_U));
                     close(fifo_cliente);
                 } else {
                     // enviar sintomas ao classificador
@@ -350,7 +351,7 @@ int main(int argc, char **argv, char **envp) {
                     }
                     msg_cli.tipo = 1;
                     msg_cli.num_especialistas = numMedicos;
-                    write(fifo_cliente, &msg_cli, sizeof(msg_cli));
+                    write(fifo_cliente, &msg_cli, sizeof(B_U));
                     close(fifo_cliente);
                 }
             }
@@ -363,7 +364,7 @@ int main(int argc, char **argv, char **envp) {
                 if (numMedicos >= maxMedicos) {
                     strcpy(msg_med.msg, "Nao e possivel receber mais medicos!");
                     msg_med.tipo = -1;
-                    write(fifo_medico, &msg_med, sizeof(msg_med));
+                    write(fifo_medico, &msg_med, sizeof(B_M));
                     close(fifo_medico);
                 } else {
                     strcpy(medicos[numMedicos].nome, buffer.nome);
@@ -372,7 +373,7 @@ int main(int argc, char **argv, char **envp) {
                     numMedicos++;
                     msg_med.pid = getpid();
                     msg_med.tipo = 1;
-                    write(fifo_medico, &msg_med, sizeof(msg_med));
+                    write(fifo_medico, &msg_med, sizeof(B_M));
                     close(fifo_medico);
                 }
             }
