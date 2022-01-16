@@ -67,6 +67,35 @@ void handle_sig(int signo, siginfo_t *info, void *context){
                 medicos[i].especialidade[0] = '\0';
             }
         }
+        // look for a cliente to consult by priority
+        int p;
+        int got_medico = 0;
+        for(p=3; p>0; p--){
+            for(i=0; i<maxClientes; i++){
+                if(utentes[i].pid != 0 && utentes[i].especialidade[0] != '\0' && utentes[i].prioridade == p){
+                    // cliente found
+                    // look for a free medico
+                    int j;
+                    for(j=0; j<maxMedicos; j++){
+                        if(medicos[j].pid != 0 && strcmp(medicos[j].especialidade, utentes[i].especialidade) == 0){
+                            // medico found
+                            // send a signal to medico
+                            const union sigval val = { .sival_int = utentes[i].pid };
+                            sigqueue(medicos[j].pid, SIGUSR1, val);
+                            medicos[j].em_consulta = 1;
+                            // send signal to cliente
+                            const union sigval val2 = { .sival_int = medicos[j].pid };
+                            sigqueue(utentes[i].pid, SIGUSR1, val2);
+                            utentes[i].em_consulta = 1;
+                            // set the medico timestamp
+                            medicos[j].ts = (unsigned int)time(NULL);
+                            got_medico = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         alarm(10);
     }
 }
@@ -203,12 +232,6 @@ int main(int argc, char **argv, char **envp) {
             fflush(stdout);
             continue;
         }
-        /*if (nfd == -1) {
-            perror("\nerro no select");
-            close(s_c_fifo_fd);
-            unlink(SERVER_FIFO_CLIENTES);
-            return EXIT_FAILURE;
-        }*/
 
         if (FD_ISSET(0, & read_fds)) {
             char comando[256];
@@ -312,32 +335,42 @@ int main(int argc, char **argv, char **envp) {
                     utenteNovo.pid = buffer.pid;
                     strcpy(utenteNovo.nome, buffer.nome);
 
+                    // find empty slot in utentes
+                    int utente_slot;
+                    for (i = 0; i < maxClientes; i++) {
+                        if (utentes[i].pid == 0 && utentes[i].especialidade[0] == '\0') {
+                            utente_slot = i;
+                            break;
+                        }
+                    }
+
+                    // atribuir especialidade
                     if(strcmp(msg_cli.especialidade, "geral") == 0 && filas[0] < 5) {
-                        utentes[somaFilas(filas)]= utenteNovo;
+                        utentes[utente_slot]= utenteNovo;
                         filas[0]++;
                         msg_cli.num_utentes = filas[0];
                     }
                     else {
                         if(strcmp(msg_cli.especialidade, "ortopedia") == 0 && filas[1] < 5) {
-                            utentes[somaFilas(filas)] = utenteNovo;
+                            utentes[utente_slot] = utenteNovo;
                             filas[1]++;
                             msg_cli.num_utentes = filas[1];
                         }
                         else {
                             if(strcmp(msg_cli.especialidade, "estomatologia") == 0 && filas[2] < 5) {
-                                utentes[somaFilas(filas)] = utenteNovo;
+                                utentes[utente_slot] = utenteNovo;
                                 filas[2]++;
                                 msg_cli.num_utentes = filas[2];
                             }
                             else {
                                 if(strcmp(msg_cli.especialidade, "neurologia") == 0 && filas[3] < 5) {
-                                    utentes[somaFilas(filas)] = utenteNovo;
+                                    utentes[utente_slot] = utenteNovo;
                                     filas[3]++;
                                     msg_cli.num_utentes = filas[3];
                                 }
                                 else {
                                     if(strcmp(msg_cli.especialidade, "oftalmologia") == 0 && filas[4] < 5) {
-                                        utentes[somaFilas(filas)] = utenteNovo;
+                                        utentes[utente_slot] = utenteNovo;
                                         filas[4]++;
                                         msg_cli.num_utentes = filas[4];
                                     }
