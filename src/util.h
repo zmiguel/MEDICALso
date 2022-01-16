@@ -4,12 +4,15 @@ struct utente{
   char especialidade[256];
   int prioridade;
   int pid;
+  int em_consulta;
 } typedef Utente;
 
 struct especialista{
   char nome[256];
   char especialidade[256];
   int pid;
+  int em_consulta;
+  unsigned int ts;
 } typedef Especialista;
 
 // Estrutura para comunicação dos cliente para o balcao
@@ -18,6 +21,7 @@ struct cliente_balcao{
   int tipo;
   char nome[256];
   char msg[256];
+  unsigned int ts;
 } typedef C_B;
 
 // Estrutura para comunicação do balcao para o utente

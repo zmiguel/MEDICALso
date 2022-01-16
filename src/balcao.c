@@ -8,75 +8,66 @@
 #include <limits.h>
 #include <sys/stat.h>
 #include <signal.h>
+#include <time.h>
 
 #include "util.h"
 
 #define SERVER_FIFO_CLIENTES "np_balcao"
-#define CLIENTE_FIFO "cliente-%d"
+
+int maxClientes=0, maxMedicos=0;
+Utente *utentes;
+Especialista *medicos;
 
 void handle_sig(int signo, siginfo_t *info, void *context){
-    // SIGUSR1
-    /*
-    if(signo == 10){
-        if(consulta == 0){
-            consulta = 1;
-            medico_pid = info->si_value.sival_int;
-        }
-    }
     // SIGINT aka CTRL+C
+    int i = 0;
     if(signo == 2){
-        //send info to balcao telling we left
-        // send SIGUSR2 with pid to balcao
-        if(balcao_pid == 0){
-            // we have not talked to balcao yet
-            char *fifo = malloc(sizeof(char)*20);
-            sprintf(fifo, "./cliente-%d", getpid());
-            unlink(fifo);
-            exit(1);
-        }else if (balcao_pid != 0 && consulta == 0){
-            // we have talked to balcao but not medico
-            const union sigval val = { .sival_int = getpid() };
-            sigqueue(balcao_pid, SIGUSR2, val);
-        }else if (balcao_pid != 0 && consulta == 1){
-            // we have talked to balcao and medico
-            const union sigval val = { .sival_int = getpid() };
-            sigqueue(medico_pid, SIGUSR2, val);
-        }else{
-            // something unexpected happened
-            printf("Something unexpected happened\n");
-            printf("Exiting...\n");
-            char *fifo = malloc(sizeof(char)*20);
-            sprintf(fifo, "./cliente-%d", getpid());
-            unlink(fifo);
+        // let everyone know we left
+        for(i=0; i<maxClientes; i++){
+            if(utentes[i].pid != 0){
+                const union sigval val = { .sival_int = getpid() };
+                sigqueue(utentes[i].pid, SIGUSR2, val);
+            }
         }
+        for(i=0; i<maxMedicos; i++){
+            if(medicos[i].pid != 0){
+                const union sigval val = { .sival_int = getpid() };
+                sigqueue(medicos[i].pid, SIGUSR2, val);
+            }
+        }
+        // close our pipe
+        unlink(SERVER_FIFO_CLIENTES);
     }
     // SIGUSR2 someone told us they left...
     if(signo == 12){
-        // check if balcao
-        if(info->si_pid == balcao_pid){
-            // balcao told us they are leving... 
-            // we must close!
-            printf("Balcao terminou...n");
-            printf("Exiting...\n");
-            char *fifo = malloc(sizeof(char)*20);
-            sprintf(fifo, "./cliente-%d", getpid());
-            unlink(fifo);
+        // check if cliente
+        for(i=0; i<maxClientes; i++){
+            if(utentes[i].pid != 0 && utentes[i].pid == info->si_pid){
+                // cliente told us they are leving...
+                utentes[i].pid = 0;
+                utentes[i].especialidade[0] = '\0';
+            }
         }
         // check if medico
-        if(info->si_pid == medico_pid){
-            // medico told us they are leving... 
-            // idk what to do here...
-            printf("Medico terminou...n");
-            printf("Exiting...\n");
-            char *fifo = malloc(sizeof(char)*20);
-            sprintf(fifo, "./cliente-%d", getpid());
-            unlink(fifo);
+        for(i=0; i<maxMedicos; i++){
+            if(medicos[i].pid != 0 && medicos[i].pid == info->si_pid){
+                // medico told us they are leving...
+                medicos[i].pid = 0;
+                medicos[i].especialidade[0] = '\0';
+            }
         }
     }
-    */
-   if (signo == SIGINT) {
-       unlink(SERVER_FIFO_CLIENTES);
-   }
+    // sigalarm for timeout
+    if(signo == 14){
+        for(i=0; i<maxMedicos; i++){
+            if(medicos[i].pid != 0 && (unsigned int)time(NULL) - medicos[i].ts > 20){
+                // medico timed out
+                medicos[i].pid = 0;
+                medicos[i].especialidade[0] = '\0';
+            }
+        }
+        alarm(10);
+    }
 }
 
 int max(int a, int b) {
@@ -139,10 +130,11 @@ int main(int argc, char **argv, char **envp) {
     struct sigaction action;
     action.sa_sigaction = handle_sig;
     action.sa_flags = SA_SIGINFO | SA_RESTART;
-    sigaction(SIGUSR1, &action, NULL); // inicial consulta
     sigaction(SIGINT, &action, NULL); // avisar que vamos sair
+    sigaction(SIGUSR2, &action, NULL); // Avisaram que sairam
+    sigaction(SIGALRM, &action, NULL); // Avisaram que sairam
+    alarm(10);
     // definição de variáveis
-    int maxClientes, maxMedicos;
     int numMedicos = 0;
     Utente utenteNovo;
     int filas[5] = {0, 0, 0, 0, 0};
@@ -166,15 +158,25 @@ int main(int argc, char **argv, char **envp) {
     maxClientes = atoi(getenv("MAXCLIENTES"));
     maxMedicos = atoi(getenv("MAXMEDICOS"));
 
-    Utente utentes[maxClientes];
+    // alocar space for utentes & medicos
+    utentes = malloc(sizeof(Utente)*maxClientes);
+    medicos = malloc(sizeof(Especialista)*maxMedicos);
 
     // iniciar utentes a zero
     for(i = 0; i < maxClientes; i++) {
+        utentes[i].pid = 0;
         utentes[i].especialidade[0] = '\0';
+        utentes[i].em_consulta = 0;
         utentes[i].prioridade = 0;
     }
 
-    Especialista medicos[maxMedicos];
+    // iniciar medicos a zero
+    for(i = 0; i < maxMedicos; i++) {
+        medicos[i].pid = 0;
+        medicos[i].em_consulta = 0;
+        medicos[i].ts = 0;
+        medicos[i].especialidade[0] = '\0';
+    }
 
     res = mkfifo(SERVER_FIFO_CLIENTES, 0777);
     if (res == -1) {
@@ -352,6 +354,7 @@ int main(int argc, char **argv, char **envp) {
                     close(fifo_cliente);
                 }
             }
+            // medico
             if (buffer.tipo == 2) {
                 char fifo_med[256];
                 sprintf(fifo_med, "./medico-%d", buffer.pid);
@@ -371,6 +374,27 @@ int main(int argc, char **argv, char **envp) {
                     msg_med.tipo = 1;
                     write(fifo_medico, &msg_med, sizeof(msg_med));
                     close(fifo_medico);
+                }
+            }
+            // medico terminou consulta
+            if(buffer.tipo == 3) {
+                int i;
+                for (i = 0; i < maxMedicos; i++) {
+                    if(medicos[i].pid == buffer.pid) {
+                        medicos[i].em_consulta = 0;
+                        printf("Especialista Terminou consulta!\n");
+                    }
+                }
+                numMedicos--;
+            }
+            // get time
+            if(buffer.tipo == 4) {
+                // get timestamp from medico
+                for(i=0; i<maxMedicos; i++) {
+                    if(medicos[i].pid == buffer.pid) {
+                        medicos[i].ts = buffer.ts;
+                        //printf("Timestamp do medico %d: %d\n", buffer.pid, buffer.ts);
+                    }
                 }
             }
         }

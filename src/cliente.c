@@ -44,6 +44,7 @@ void handle_sig(int signo, siginfo_t *info, void *context){
             // we have talked to balcao and medico
             const union sigval val = { .sival_int = getpid() };
             sigqueue(medico_pid, SIGUSR2, val);
+            sigqueue(balcao_pid, SIGUSR2, val);
         }else{
             // something unexpected happened
             printf("Something unexpected happened\n");
